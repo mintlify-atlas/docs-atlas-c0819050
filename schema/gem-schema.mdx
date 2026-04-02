@@ -1,0 +1,243 @@
+---
+title: "Gem Advisory Schema"
+description: "YAML schema reference for Ruby gem security advisories"
+---
+
+Each advisory in `gems/` is a YAML file named after its CVE or GHSA identifier. Below is the complete field reference, followed by field descriptions.
+
+## Complete Example
+
+```yaml gems/actionpack/CVE-2024-41128.yml
+---
+gem: actionpack
+framework: rails
+cve: 2024-41128
+ghsa: x76w-6vjr-8xgj
+url: https://github.com/rails/rails/security/advisories/GHSA-x76w-6vjr-8xgj
+title: Possible ReDoS vulnerability in query parameter filtering in Action Dispatch
+date: 2024-10-15
+description: |
+  There is a possible ReDoS vulnerability in the query parameter
+  filtering routines of Action Dispatch. This vulnerability has
+  been assigned the CVE identifier CVE-2024-41128.
+
+  ## Impact
+
+  Carefully crafted query parameters can cause query parameter
+  filtering to take an unexpected amount of time, possibly resulting
+  in a DoS vulnerability. All users running an affected release
+  should either upgrade or apply the relevant patch immediately.
+
+  Ruby 3.2 has mitigations for this problem, so Rails applications
+  using Ruby 3.2 or newer are unaffected. Rails 8.0.0.beta1 depends
+  on Ruby 3.2 or greater so is unaffected.
+cvss_v4: 6.6
+unaffected_versions:
+  - "< 3.1.0"
+patched_versions:
+  - "~> 6.1.7.9"
+  - "~> 7.0.8, >= 7.0.8.5"
+  - "~> 7.1.4, >= 7.1.4.1"
+  - ">= 7.2.1.1"
+related:
+  url:
+    - https://nvd.nist.gov/vuln/detail/CVE-2024-41128
+    - https://github.com/rails/rails/security/advisories/GHSA-x76w-6vjr-8xgj
+```
+
+## Field Reference
+
+### Identification
+
+<ParamField path="gem" type="string" required>
+  The name of the affected gem, exactly as it appears on [rubygems.org](https://rubygems.org). This must match the gem's published name.
+
+  ```yaml
+  gem: nokogiri
+  ```
+</ParamField>
+
+<ParamField path="library" type="string">
+  The name of the Ruby library that the affected gem belongs to, if the gem is part of a larger library grouping. Used when the gem name alone does not fully convey the affected library.
+
+  ```yaml
+  library: rails-html-sanitizer
+  ```
+</ParamField>
+
+<ParamField path="framework" type="string">
+  The name of the framework the affected gem belongs to. Use this to associate a gem with a well-known framework even if it is distributed as a standalone package.
+
+  ```yaml
+  framework: rails
+  ```
+</ParamField>
+
+<ParamField path="platform" type="string">
+  The platform this vulnerability affects, if the vulnerability is platform-specific. Omit this field when the vulnerability applies to all platforms.
+
+  ```yaml
+  platform: jruby
+  ```
+</ParamField>
+
+### Vulnerability Identifiers
+
+<ParamField path="cve" type="string">
+  The [CVE](https://cve.mitre.org/) identifier for the vulnerability, in the format `YYYY-NNNNN` (year and numeric ID, without the `CVE-` prefix).
+
+  ```yaml
+  cve: 2023-22795
+  ```
+</ParamField>
+
+<ParamField path="osvdb" type="integer">
+  The [Open Sourced Vulnerability Database](https://en.wikipedia.org/wiki/Open_Source_Vulnerability_Database) (OSVDB) numeric ID. OSVDB is now defunct; this field exists for historical records.
+
+  ```yaml
+  osvdb: 118481
+  ```
+</ParamField>
+
+<ParamField path="ghsa" type="string">
+  The [GitHub Security Advisory](https://help.github.com/en/articles/about-maintainer-security-advisories) (GHSA) identifier, in the format `xxxx-xxxx-xxxx` (three groups of four lowercase alphanumeric characters, without the `GHSA-` prefix).
+
+  ```yaml
+  ghsa: 8xww-x3g3-6jcv
+  ```
+</ParamField>
+
+### Advisory Metadata
+
+<ParamField path="url" type="string" required>
+  The URL to the full advisory. Must be an `http://` or `https://` URL. This is typically a link to the CVE page, GitHub Security Advisory, or the project's release notes.
+
+  ```yaml
+  url: https://github.com/rails/rails/security/advisories/GHSA-x76w-6vjr-8xgj
+  ```
+</ParamField>
+
+<ParamField path="title" type="string" required>
+  A concise, single-line title describing the vulnerability. Must not span multiple lines.
+
+  ```yaml
+  title: ReDoS based DoS vulnerability in Action Dispatch
+  ```
+</ParamField>
+
+<ParamField path="date" type="date" required>
+  The public disclosure date of the advisory, in `YYYY-MM-DD` format.
+
+  ```yaml
+  date: 2023-01-18
+  ```
+</ParamField>
+
+<ParamField path="description" type="string" required>
+  One or more paragraphs describing the vulnerability. Use a YAML block scalar (`|`) to preserve newlines. May include impact, affected versions, workarounds, and other relevant details. Markdown is supported.
+
+  ```yaml
+  description: |
+    There is a possible regular expression based DoS vulnerability in Action
+    Dispatch related to the If-None-Match header.
+
+    # Impact
+
+    A specially crafted HTTP If-None-Match header can cause the regular
+    expression engine to enter a state of catastrophic backtracking.
+  ```
+</ParamField>
+
+### CVSS Scores
+
+<ParamField path="cvss_v2" type="float">
+  The [CVSSv2](https://www.first.org/cvss/v2/guide) score for the vulnerability, as a decimal number between 0.0 and 10.0.
+
+  ```yaml
+  cvss_v2: 5.0
+  ```
+</ParamField>
+
+<ParamField path="cvss_v3" type="float">
+  The [CVSSv3](https://www.first.org/cvss/v3.1/user-guide) score for the vulnerability, as a decimal number between 0.0 and 10.0.
+
+  ```yaml
+  cvss_v3: 7.5
+  ```
+</ParamField>
+
+<ParamField path="cvss_v4" type="float">
+  The [CVSSv4](https://www.first.org/cvss/v4.0/user-guide) score for the vulnerability, as a decimal number between 0.0 and 10.0.
+
+  ```yaml
+  cvss_v4: 6.6
+  ```
+</ParamField>
+
+### Version Constraints
+
+<Warning>
+  Version strings in `patched_versions` and `unaffected_versions` must be quoted. Unquoted strings like `>= 1.2.3` are invalid YAML because `>` is a reserved character. Always write them as `">= 1.2.3"` or `'~> 2.0'`.
+</Warning>
+
+<Note>
+  Version requirements follow [RubyGems version requirement syntax](https://guides.rubygems.org/patterns/#pessimistic-version-constraint):
+  - `">= 1.2.3"` — version 1.2.3 or greater
+  - `"~> 2.0"` — compatible with 2.x (pessimistic constraint)
+  - `"~> 6.1.7, >= 6.1.7.1"` — compatible with 6.1.x and at least 6.1.7.1
+  - `"< 3.1.0"` — any version below 3.1.0
+
+  Multiple entries in the array describe patched ranges across different release branches.
+</Note>
+
+<ParamField path="unaffected_versions" type="array">
+  A list of version requirement strings describing which versions of the gem are **not** affected by the vulnerability. Each entry is a quoted string using RubyGems version requirement syntax.
+
+  ```yaml
+  unaffected_versions:
+    - "< 3.1.0"
+  ```
+</ParamField>
+
+<ParamField path="patched_versions" type="array">
+  A list of version requirement strings describing which versions of the gem contain the fix. Each entry is a quoted string using RubyGems version requirement syntax. Multiple entries are used when fixes were backported across release branches.
+
+  ```yaml
+  patched_versions:
+    - "~> 6.1.7.9"
+    - "~> 7.0.8, >= 7.0.8.5"
+    - "~> 7.1.4, >= 7.1.4.1"
+    - ">= 7.2.1.1"
+  ```
+</ParamField>
+
+### Related References
+
+<ParamField path="related" type="object">
+  Additional identifiers and URLs that are referenced by but secondary to this advisory. Useful when an advisory tracks multiple upstream CVEs or links to supplementary resources. Supported keys:
+
+  - `cve` — list of additional CVE IDs (same format as the top-level `cve` field)
+  - `ghsa` — list of additional GHSA IDs
+  - `osvdb` — list of additional OSVDB integer IDs
+  - `url` — list of additional `http://` or `https://` URLs
+
+  ```yaml
+  related:
+    cve:
+      - 2023-29469
+      - 2023-28484
+    url:
+      - https://gitlab.gnome.org/GNOME/libxml2/-/releases/v2.10.4
+      - https://nvd.nist.gov/vuln/detail/CVE-2023-29469
+  ```
+</ParamField>
+
+### Internal
+
+<ParamField path="notes" type="string">
+  Internal notes about this advisory's inclusion in the database. Not displayed to end users but useful for maintainers when reviewing or updating records.
+
+  ```yaml
+  notes: Gem was yanked; unaffected_versions left blank intentionally.
+  ```
+</ParamField>

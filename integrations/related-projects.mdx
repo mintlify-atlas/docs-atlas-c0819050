@@ -1,0 +1,82 @@
+---
+title: "Related Projects"
+description: "Tools and projects in the Ruby security ecosystem"
+---
+
+The Ruby Advisory Database sits at the center of a broader ecosystem of tools and services. This page describes how those pieces fit together.
+
+## Projects
+
+<CardGroup cols={2}>
+
+<Card title="bundler-audit" icon="shield-halved" href="https://github.com/rubysec/bundler-audit">
+  Patch-level verification for `Gemfile.lock`. The primary consumer of this database — scan your dependencies for known vulnerabilities from the command line or in CI.
+</Card>
+
+<Card title="rubysec.github.io" icon="globe" href="https://rubysec.github.io">
+  The Ruby security advisory website. Published automatically from this database and provides a human-readable interface for browsing and searching advisories.
+</Card>
+
+<Card title="ruby-advisory-db" icon="database" href="https://github.com/rubysec/ruby-advisory-db">
+  The advisory database repository itself. Clone it, browse advisories by gem or CVE, and contribute new advisories via pull request.
+</Card>
+
+<Card title="GitHub Security Advisory API" icon="code" href="https://developer.github.com/v4/object/securityadvisory/">
+  GitHub's advisory database for the ecosystem. New advisories are synced from this API into ruby-advisory-db through the `sync_github_advisories` rake task, then curated by maintainers before merging.
+</Card>
+
+</CardGroup>
+
+## How advisories reach rubysec.github.io
+
+When a pull request is merged to the `master` branch, a GitHub Actions workflow (`.github/workflows/website.yml`) sends a `repository_dispatch` event to the `rubysec/rubysec.github.io` repository. This triggers a rebuild of the advisory website from the updated YAML files.
+
+Every merged advisory PR therefore results in an updated advisory website automatically, with no manual publishing step required.
+
+## GitHub Advisory sync
+
+The database includes a rake task to pull advisories from the GitHub Security Advisory API that aren't yet in this dataset:
+
+```bash
+GH_API_TOKEN="your GitHub API token" bundle exec rake sync_github_advisories
+```
+
+To sync advisories for a single gem only:
+
+```bash
+GH_API_TOKEN="your GitHub API token" bundle exec rake sync_github_advisories[rack]
+```
+
+The task creates YAML stub files for any missing advisories. These stubs require human review before they are ready to merge — the GitHub data needs the following fields completed or verified:
+
+- `cvss_v3` and `cvss_v4` scores (look these up from the linked CVE)
+- `patched_versions` using the correct Ruby gem version constraint syntax
+- `unaffected_versions` (optional, if applicable)
+
+After editing, delete the raw GitHub data appended at the bottom of each generated file, then submit a pull request.
+
+The token can be completely scope-less — it only needs to access the public GitHub Advisory API.
+
+## OSVDB historical data
+
+<Note>
+  The Open Source Vulnerability Database (OSVDB), operated by the Open Security Foundation, shut down in April 2016. However, advisories that were originally sourced from OSVDB remain in this database and retain their `osvdb` identifiers in the YAML schema. This preserves historical traceability for older vulnerabilities.
+</Note>
+
+Many older advisories in the `gems/` directory carry an `osvdb` field referencing their original OSVDB ID. This data is kept for completeness and cross-referencing with external records that may still cite OSVDB identifiers.
+
+## Reporting vulnerabilities
+
+If you know of a vulnerability that isn't in the database:
+
+1. **Open an issue** on [rubysec/ruby-advisory-db](https://github.com/rubysec/ruby-advisory-db/issues) with as much detail as you have — gem name, affected versions, CVE or GHSA ID, and a reference URL.
+2. **Submit a pull request** with a new advisory YAML file following the [schema](/schema/gem-schema). The file should be placed at `gems/<gem-name>/<CVE-or-GHSA-ID>.yml`.
+
+Before submitting, run the test suite to validate your YAML:
+
+```bash
+bundle install
+bundle exec rspec
+```
+
+The community relies on contributions from security researchers, gem authors, and developers who encounter vulnerabilities in their own projects. All contributors are credited in [CONTRIBUTORS.md](https://github.com/rubysec/ruby-advisory-db/blob/master/CONTRIBUTORS.md).

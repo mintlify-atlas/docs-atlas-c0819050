@@ -1,0 +1,101 @@
+---
+title: "GitHub Advisory Sync"
+description: "Sync advisories from the GitHub Security Advisory API"
+---
+
+The repository includes a sync script that queries the
+[GitHub Security Advisory API](https://developer.github.com/v4/object/securityadvisory/)
+and creates initial YAML files for any RubyGem advisories that are present in
+GitHub's database but not yet in this repository. Running the sync periodically
+helps keep the two datasets aligned.
+
+The script is implemented in `lib/github_advisory_sync.rb` as
+`GitHub::GitHubAdvisorySync.sync` and is exposed via the `sync_github_advisories`
+Rake task.
+
+<Warning>
+  Files written by the sync script are **incomplete drafts**. They must be
+  reviewed and edited before they can be committed. Do not submit a pull request
+  with unedited sync output.
+</Warning>
+
+## Getting a GitHub API token
+
+The GitHub Advisory API requires authentication. You only need a
+**scope-less personal access token** — no repository or other permissions are
+required.
+
+Generate one at [https://github.com/settings/tokens](https://github.com/settings/tokens),
+then set it in your environment before running the Rake task.
+
+## Running the sync
+
+<Steps>
+  <Step title="Install dependencies">
+    ```bash
+    bundle install
+    ```
+  </Step>
+  <Step title="Run the sync task">
+    To sync all RubyGem advisories from GitHub:
+
+    ```bash
+    GH_API_TOKEN="your_token" bundle exec rake sync_github_advisories
+    ```
+
+    To sync advisories for a single gem only:
+
+    ```bash
+    GH_API_TOKEN="your_token" bundle exec rake sync_github_advisories[gem_name]
+    ```
+
+    The task calls `GitHub::GitHubAdvisorySync.sync` (with an optional
+    `gem_name:` argument), queries the GitHub GraphQL API for all RubyGem
+    security vulnerabilities, and writes a YAML file for each advisory not
+    already present in the `gems/` directory.
+  </Step>
+  <Step title="Review each generated file">
+    The sync script cannot automatically derive every required field from
+    GitHub's data. For each file it writes, you must manually:
+
+    - **Fill in `cvss_v3`** by following the CVE link and copying the score
+      from the CVE detail page.
+    - **Fill in `cvss_v4`** in the same way, if available.
+    - **Fill in `patched_versions`** using the version comments written at the
+      bottom of the file by the script.
+    - **Optionally fill in `unaffected_versions`** based on the same comments.
+    - **Delete the GitHub data block** at the bottom of the file. The script
+      appends a second YAML document (after a second `---` line) containing
+      raw GitHub API data as a reference. This block must be removed before
+      committing.
+
+    The script marks placeholder fields with `<FILL IN IF AVAILABLE>` where
+    data could not be determined automatically.
+  </Step>
+  <Step title="Run the test suite">
+    After editing the generated files, confirm they pass validation:
+
+    ```bash
+    bundle exec rspec
+    ```
+  </Step>
+  <Step title="Submit a pull request">
+    Once all files are edited, validated, and the GitHub data block is removed,
+    commit your changes and open a pull request against the `master` branch.
+  </Step>
+</Steps>
+
+## What the script does not do automatically
+
+The following fields require human review and cannot be filled in
+programmatically:
+
+| Field                 | Reason                                                                                                        |
+| --------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `cvss_v3`             | Must be retrieved from the CVE detail page; GitHub's CVSS data may differ.                                   |
+| `cvss_v4`             | Same as above — CVSSv4 data is not always available from the GitHub API.                                     |
+| `patched_versions`    | GitHub provides a `firstPatchedVersion` identifier, but the rubysec format requires a Ruby version specifier. |
+| `unaffected_versions` | Must be inferred from the `vulnerableVersionRange` field; the mapping is not always unambiguous.              |
+
+The raw GitHub API data appended at the bottom of each generated file is
+provided to help you fill in these fields. Remove it entirely before committing.

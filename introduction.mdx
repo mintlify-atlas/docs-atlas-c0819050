@@ -1,0 +1,93 @@
+---
+title: "Introduction"
+description: "What the Ruby Advisory Database is and how it works"
+---
+
+The Ruby Advisory Database is a community-maintained, YAML-based database of security advisories for Ruby gems and Ruby implementations. It is the authoritative open-source source of truth for known vulnerabilities in the Ruby ecosystem, used by tools like [bundler-audit](https://github.com/rubysec/bundler-audit) to automatically scan your projects.
+
+## How it works
+
+Each advisory is a plain YAML file stored under a directory named after the affected gem or Ruby implementation. Files are named using the advisory's CVE ID or GHSA ID. This makes the database easy to read, diff, and contribute to — no special tooling required to browse or update it.
+
+## Directory structure
+
+The database is organized into two top-level directories:
+
+```
+gems/:
+  actionpack/:
+    CVE-2014-0130.yml  CVE-2014-7818.yml  CVE-2014-7829.yml  CVE-2015-7576.yml
+    CVE-2015-7581.yml  CVE-2016-0751.yml  CVE-2016-0752.yml
+rubies/:
+  jruby/:
+    ...
+  mruby/:
+    ...
+  ruby/:
+    ...
+```
+
+### `gems/`
+
+Contains sub-directories that match gem names on [rubygems.org](https://rubygems.org). Each sub-directory holds one or more advisory YAML files named by their CVE or GHSA ID. The database currently covers **435+ gems**.
+
+### `rubies/`
+
+Contains sub-directories for each Ruby implementation. Currently tracks five implementations:
+
+- `ruby` — the reference MRI implementation
+- `jruby` — Ruby on the JVM
+- `mruby` — lightweight Ruby for embedded systems
+- `mrubyc` — mruby/c implementation
+- `rbx` — Rubinius
+
+Advisory files inside each implementation directory are also named by CVE or GHSA ID.
+
+## Advisory file format
+
+Here is a real example from the database — `gems/actionpack/CVE-2023-22795.yml`:
+
+```yaml
+---
+gem: actionpack
+cve: 2023-22795
+ghsa: 8xww-x3g3-6jcv
+url: https://github.com/rails/rails/releases/tag/v7.0.4.1
+title: ReDoS based DoS vulnerability in Action Dispatch
+date: 2023-01-18
+description: |
+  There is a possible regular expression based DoS vulnerability in Action
+  Dispatch related to the If-None-Match header. This vulnerability has been
+  assigned the CVE identifier CVE-2023-22795.
+
+  Versions Affected: All
+  Not affected: None
+  Fixed Versions: 6.1.7.1, 7.0.4.1
+patched_versions:
+  - "~> 5.2.8"
+  - "~> 6.1.7, >= 6.1.7.1"
+  - ">= 7.0.4.1"
+```
+
+Each advisory is self-contained: it names the affected package, links to the full disclosure, describes the vulnerability, and lists the patched versions.
+
+## Explore the database
+
+<CardGroup cols={2}>
+  <Card title="Gem advisories" icon="gem" href="/database/gem-advisories">
+    Browse security advisories for Ruby gems.
+  </Card>
+  <Card title="Ruby advisories" icon="diamond" href="/database/ruby-advisories">
+    Browse advisories for Ruby implementations.
+  </Card>
+  <Card title="Gem advisory schema" icon="file-code" href="/schema/gem-schema">
+    Full YAML schema reference for gem advisories.
+  </Card>
+  <Card title="bundler-audit" icon="shield-check" href="/integrations/bundler-audit">
+    Scan your Gemfile.lock against this database.
+  </Card>
+</CardGroup>
+
+<Note>
+  Community contributions are welcome. If you know about a vulnerability that isn't listed, open an issue or submit a pull request to the [ruby-advisory-db repository](https://github.com/rubysec/ruby-advisory-db).
+</Note>

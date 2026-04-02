@@ -1,0 +1,160 @@
+---
+title: "bundler-audit"
+description: "Scan your Gemfile.lock for known vulnerabilities using bundler-audit"
+---
+
+bundler-audit is the primary tool for consuming the Ruby Advisory Database. It checks your `Gemfile.lock` against the local copy of the database and reports any gems with known vulnerabilities, along with remediation advice.
+
+## Installation and setup
+
+<Steps>
+  <Step title="Install bundler-audit">
+    Install the gem globally so it's available across all your projects:
+
+    ```bash
+    gem install bundler-audit
+    ```
+  </Step>
+
+  <Step title="Update the advisory database">
+    Pull the latest advisories from the Ruby Advisory Database:
+
+    ```bash
+    bundle-audit update
+    ```
+
+    This clones or updates a local copy of `rubysec/ruby-advisory-db` on your machine.
+  </Step>
+
+  <Step title="Scan your Gemfile.lock">
+    Run the check against your project's `Gemfile.lock`:
+
+    ```bash
+    bundle-audit check
+    ```
+
+    bundler-audit reads every gem version pinned in your lockfile and compares it against the advisory database.
+  </Step>
+</Steps>
+
+<Tip>
+  In CI, combine the update and scan into a single command so you always check against the latest advisories:
+
+  ```bash
+  bundle-audit check --update
+  ```
+</Tip>
+
+## Reading the output
+
+When bundler-audit finds a vulnerable gem, it prints a report for each advisory:
+
+```
+Name: actionpack
+Version: 4.1.14
+Advisory: CVE-2016-0752
+Criticality: Medium
+URL: https://groups.google.com/forum/#!topic/rubyonrails-security/335P2DcDc_8
+Title: Possible Information Leak Vulnerability in Action View
+Solution: upgrade to >= 4.2.5.1
+
+Vulnerabilities found!
+```
+
+Each field maps directly to the advisory YAML in the database:
+
+| Field | Description |
+|---|---|
+| `Name` | The affected gem |
+| `Version` | The version pinned in your `Gemfile.lock` |
+| `Advisory` | CVE or GHSA identifier |
+| `Criticality` | Derived from the CVSS score |
+| `URL` | Link to the full advisory |
+| `Title` | Short description of the vulnerability |
+| `Solution` | Minimum patched version to upgrade to |
+
+bundler-audit exits with a non-zero status when vulnerabilities are found, making it straightforward to fail a CI build.
+
+## Ignoring specific advisories
+
+To ignore one or more CVEs — for example, known false positives or issues you've mitigated at another layer — pass the `--ignore` flag:
+
+```bash
+bundle-audit check --ignore CVE-2014-1234
+```
+
+To ignore multiple advisories, repeat the flag:
+
+```bash
+bundle-audit check --ignore CVE-2014-1234 --ignore GHSA-1234-5678-abcd
+```
+
+### Persisting ignores with `.bundler-audit.yml`
+
+For a permanent ignore list checked into your repository, create a `.bundler-audit.yml` file at the project root:
+
+```yaml
+ignore:
+  - CVE-2014-1234
+  - CVE-2015-5678
+  - GHSA-1234-5678-abcd
+```
+
+bundler-audit reads this file automatically on every run. This is useful for advisories that don't apply to your deployment environment or that you've addressed through other means.
+
+<Warning>
+  If you use [Rails LTS](https://railslts.com/), the Ruby Advisory Database does not track Rails LTS patch versions. This means bundler-audit will report CVEs that Rails LTS has already backported fixes for.
+
+  Add the [CVEs addressed by Rails LTS](https://makandracards.com/railslts/474590-list-cves-addressed-rails-lts) to your `.bundler-audit.yml` `ignore:` list to suppress these false positives.
+</Warning>
+
+## CI/CD integration
+
+### GitHub Actions
+
+Add a vulnerability scan step to your workflow. The example below caches the advisory database between runs to speed up CI:
+
+```yaml
+name: Security audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "0 6 * * 1" # Weekly on Monday at 06:00 UTC
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+
+      - name: Install bundler-audit
+        run: gem install bundler-audit
+
+      - name: Scan for vulnerabilities
+        run: bundle-audit check --update
+```
+
+The `schedule` trigger runs a weekly scan so you catch new advisories even when your code hasn't changed — a new CVE can be published for a gem version you've had pinned for months.
+
+## Command reference
+
+| Command | Description |
+|---|---|
+| `bundle-audit update` | Update the local advisory database |
+| `bundle-audit check` | Scan `Gemfile.lock` against the local database |
+| `bundle-audit check --update` | Update and scan in one step |
+| `bundle-audit check --ignore CVE-XXXX-YYYY` | Scan while ignoring a specific advisory |
+| `bundle-audit check --format json` | Output results as JSON for downstream processing |
+| `bundle-audit version` | Print the installed version |
+
+## Source
+
+bundler-audit is maintained by the rubysec organization: [github.com/rubysec/bundler-audit](https://github.com/rubysec/bundler-audit)

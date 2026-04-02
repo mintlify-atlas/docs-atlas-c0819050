@@ -1,0 +1,123 @@
+---
+title: "Running Tests"
+description: "Validate advisory files with the test suite"
+---
+
+The repository includes an RSpec test suite that validates every advisory YAML
+file in the database. Run the tests before submitting any pull request.
+
+<Note>
+  The test suite must pass with zero failures before you open a pull request.
+  Reviewers will not merge advisories that fail validation.
+</Note>
+
+## Installing dependencies
+
+The test suite depends on `rspec` (~> 3.0) and `kwalify` (~> 0.1), which are
+declared in the `Gemfile`. Install them with Bundler:
+
+```bash
+bundle install
+```
+
+## Running the tests
+
+```bash
+bundle exec rspec
+```
+
+This runs the full suite defined in `spec/advisories_spec.rb`, which validates
+every file under `gems/` and `rubies/`.
+
+### Example output
+
+```
+Finished in 4.32 seconds (files took 1.05 seconds to load)
+1234 examples, 0 failures
+```
+
+## What the tests check
+
+### Schema validation
+
+Every advisory YAML file is validated against a [kwalify](https://rubygems.org/gems/kwalify)
+schema:
+
+- `gems/` advisories are validated against `spec/schemas/gem.yml`
+- `rubies/` advisories are validated against `spec/schemas/ruby.yml`
+
+Required fields (`gem`/`engine`, `url`, `title`, `date`, `description`) must be
+present and of the correct type.
+
+### Field type and content rules
+
+The suite enforces the following rules on every advisory:
+
+| Field                 | Rule                                                                                           |
+| --------------------- | ---------------------------------------------------------------------------------------------- |
+| `title`               | Must be a non-empty string on a single line — no newline characters, no leading/trailing whitespace. |
+| `description`         | Must be a multi-line string (must contain `\n`). Must not contain double-escaped newlines (`\\n\\n`) or PoC sections (`### PoC`). |
+| `date`                | Must parse as a `Date` object.                                                                 |
+| `cve` / `osvdb` / `ghsa` | At least one identifier must be present.                                                  |
+| `cvss_v2` / `cvss_v3` / `cvss_v4` | If present, must be a Float between 0.0 and 10.0. If `cvss_v2` is set, `cvss_v3` must also be provided. |
+| `patched_versions`    | If present, must be an Array. Each element must be a valid Ruby version requirement string.    |
+| `unaffected_versions` | If present, must be an Array. Each element must be a valid Ruby version requirement string.    |
+| `related`             | If present, must be a Hash. Allowed keys: `cve`, `ghsa`, `osvdb`, `url`.                      |
+
+### Version format
+
+Each string in `patched_versions` and `unaffected_versions` must:
+
+- Start with a valid operator: `<=`, `<`, `>=`, `>`, `~>`, or `=`
+- Be a valid `Gem::Requirement` specifier (1–2 comma-separated version ranges)
+
+The highest version entry (sorted numerically across both
+`patched_versions` and `unaffected_versions`) must begin with `>=` or `>`. This
+signals to bundler-audit that all future versions are assumed to be safe.
+
+### Gem name consistency
+
+For `gems/` advisories, the `gem` field must match the containing directory
+name (case-insensitive). For example, a file at `gems/actionpack/CVE-2023-22795.yml`
+must have `gem: actionpack`.
+
+### Engine name consistency
+
+For `rubies/` advisories, the `engine` field must match the containing directory
+name (case-insensitive). For example, a file at `rubies/ruby/CVE-2022-28739.yml`
+must have `engine: ruby`.
+
+### No case-insensitive directory conflicts
+
+No two directories under `gems/` may differ only in case. For example, having
+both `gems/Foo` and `gems/foo` is not allowed.
+
+### File naming
+
+Advisory filenames must match one of these patterns:
+
+- `CVE-YYYY-NNNNN.yml` — CVE year plus sequence number (4+ digits)
+- `OSVDB-NNNNN.yml` — OSVDB numeric identifier
+- `GHSA-xxxx-xxxx-xxxx.yml` — four groups of four lowercase alphanumeric
+  characters
+
+When a `cve` field is present the filename must start with `CVE-`. When a
+`ghsa` field is present (and no CVE) the filename must start with `GHSA-`.
+
+## YAML linting
+
+The repository is also configured for `yamllint` via `.yamllint.yml`:
+
+```yaml
+extends: default
+
+rules:
+  line-length: disable
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+```
+
+Line-length checking is disabled (advisory descriptions can be long), but
+indentation is enforced at 2 spaces with consistent sequence indentation. If
+your editor or CI environment runs `yamllint`, it will apply these rules.

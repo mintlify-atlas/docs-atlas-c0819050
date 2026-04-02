@@ -1,0 +1,106 @@
+---
+title: "Gem Advisories"
+description: "Security advisories for Ruby gems in the gems/ directory"
+---
+
+The `gems/` directory is the largest section of the Ruby Advisory Database. It contains one subdirectory per Ruby gem, named exactly after the gem's identifier on [rubygems.org](https://rubygems.org). As of this writing, the database covers **435+ gems**.
+
+## Directory structure
+
+Each gem gets its own subdirectory. Within that subdirectory, every advisory is a separate YAML file named by its CVE or GHSA identifier:
+
+```bash
+gems/
+├── actionpack/
+│   ├── CVE-2023-22795.yml
+│   ├── CVE-2023-22797.yml
+│   └── CVE-2024-26142.yml
+├── nokogiri/
+│   ├── CVE-2022-24836.yml
+│   └── GHSA-crjr-9rc5-ghw8.yml
+├── rack/
+│   └── CVE-2022-30122.yml
+└── rails/
+    └── CVE-2014-0081.yml
+```
+
+The path pattern is:
+
+```
+gems/<gem-name>/<CVE-or-GHSA-ID>.yml
+```
+
+## Notable gems with many advisories
+
+Several widely-used gems have accumulated a significant number of advisories over the years:
+
+| Gem | Advisories | Description |
+|-----|-----------|-------------|
+| `nokogiri` | 46 | XML/HTML parsing library |
+| `actionpack` | 61 | Rails request/response framework |
+| `rack` | 37 | Ruby web server interface |
+| `activerecord` | 24 | Rails database ORM |
+| `activesupport` | 14 | Rails utility library |
+| `rails` | 10 | Full Rails framework meta-gem |
+
+## Example advisory
+
+The following is a real advisory from `gems/actionpack/CVE-2023-22795.yml`:
+
+```yaml
+---
+gem: actionpack
+framework: rails
+cve: 2023-22795
+ghsa: 8xww-x3g3-6jcv
+url: https://github.com/rails/rails/releases/tag/v7.0.4.1
+title: ReDoS based DoS vulnerability in Action Dispatch
+date: 2023-01-18
+description: |
+  There is a possible regular expression based DoS vulnerability in Action
+  Dispatch related to the If-None-Match header. This vulnerability has been
+  assigned the CVE identifier CVE-2023-22795.
+
+  Versions Affected: All
+  Not affected: None
+  Fixed Versions: 6.1.7.1, 7.0.4.1
+
+  # Impact
+
+  A specially crafted HTTP If-None-Match header can cause the regular
+  expression engine to enter a state of catastrophic backtracking, when on a
+  version of Ruby below 3.2.0. This can cause the process to use large amounts
+  of CPU and memory, leading to a possible DoS vulnerability All users running
+  an affected release should either upgrade or use one of the workarounds
+  immediately.
+
+  # Workarounds
+
+  We recommend that all users upgrade to one of the FIXED versions. In the
+  meantime, users can mitigate this vulnerability by using a load balancer or
+  other device to filter out malicious If-None-Match headers before they reach
+  the application.
+
+  Users on Ruby 3.2.0 or greater are not affected by this vulnerability.
+patched_versions:
+  - "~> 5.2.8"
+  - "~> 6.1.7, >= 6.1.7.1"
+  - ">= 7.0.4.1"
+```
+
+This advisory uses the optional `framework` field to indicate that `actionpack` belongs to the Rails framework. It also provides both a CVE identifier (`cve`) and a GitHub Security Advisory identifier (`ghsa`), and lists multiple `patched_versions` constraints using [Gem::Requirement](https://guides.rubygems.org/patterns/#semantic-versioning) syntax.
+
+<Tip>
+  Directory names are matched case-insensitively by tooling, but the database enforces that no two gem names may conflict when compared case-insensitively. When adding a new gem directory, ensure its name does not conflict with any existing directory under a different case.
+</Tip>
+
+## Learn more
+
+<CardGroup cols={2}>
+  <Card title="Gem advisory schema" icon="file-code" href="/schema/gem-schema">
+    Complete field-by-field reference for the gem advisory YAML schema, including all optional fields like `cvss_v3`, `unaffected_versions`, and `related`.
+  </Card>
+  <Card title="Submitting advisories" icon="circle-plus" href="/contributing/submitting-advisories">
+    Step-by-step guide for researching, writing, and submitting a new gem advisory as a pull request.
+  </Card>
+</CardGroup>

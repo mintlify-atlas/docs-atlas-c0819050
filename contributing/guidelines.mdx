@@ -1,0 +1,119 @@
+---
+title: "Contributing Guidelines"
+description: "Rules and standards for contributing to the Ruby Advisory Database"
+---
+
+The Ruby Advisory Database is a community effort. To keep the database consistent
+and machine-readable, all contributions must follow the formatting rules below.
+Before opening a pull request, read this page in full and review
+[Submitting Advisories](/contributing/submitting-advisories) for the step-by-step
+submission process.
+
+## Formatting rules
+
+<Warning>
+  Advisories that do not conform to these rules will fail the test suite and
+  cannot be merged. Run `bundle exec rspec` before submitting.
+</Warning>
+
+### Text width
+
+Keep all text within **80 columns**. This applies to every field in the YAML
+file, including long URLs placed in the `description` block.
+
+### YAML indentation
+
+YAML files must be indented with **2 spaces**. Tabs are not allowed.
+
+```yaml
+patched_versions:
+  - ">= 1.2.3"
+  - "~> 1.1.5"
+```
+
+### `title` field
+
+<Note>
+  The `title:` field must be a **single sentence on one line**. It must not
+  contain newline characters and must not have leading or trailing whitespace.
+</Note>
+
+```yaml
+# Correct
+title: ReDoS based DoS vulnerability in Action Dispatch
+
+# Incorrect — spans multiple lines
+title: |
+  ReDoS based DoS vulnerability
+  in Action Dispatch
+```
+
+### `description` field
+
+The `description:` field must use the block scalar syntax (`|`) and must contain
+**more than one sentence or line**. Single-line descriptions are not accepted.
+
+```yaml
+description: |
+  There is a possible regular expression based DoS vulnerability in Action
+  Dispatch related to the If-None-Match header.
+
+  Versions Affected: All
+  Fixed Versions: 6.1.7.1, 7.0.4.1
+```
+
+### `patched_versions` and `unaffected_versions`
+
+<Warning>
+  Version range strings inside `patched_versions` and `unaffected_versions`
+  **must be quoted**. Unquoted version operators are parsed as YAML scalars and
+  will fail schema validation.
+</Warning>
+
+```yaml
+# Correct
+patched_versions:
+  - ">= 1.2.3"
+  - "~> 1.1.5"
+
+unaffected_versions:
+  - "< 1.0.0"
+
+# Incorrect — unquoted
+patched_versions:
+  - >= 1.2.3
+```
+
+The highest version entry across both `patched_versions` and
+`unaffected_versions` (sorted by version number) must use a `>=` or `>`
+operator. This tells bundler-audit that future versions are assumed to be safe.
+
+## Pull request process
+
+<Steps>
+  <Step title="Fork the repository">
+    Fork [rubysec/ruby-advisory-db](https://github.com/rubysec/ruby-advisory-db)
+    on GitHub and clone your fork locally.
+  </Step>
+  <Step title="Create the advisory file">
+    Add your advisory YAML file in the correct location. See
+    [Submitting Advisories](/contributing/submitting-advisories) for the full
+    directory structure and required fields.
+  </Step>
+  <Step title="Run the test suite">
+    Install dependencies and run the full test suite to confirm your file is
+    valid:
+
+    ```bash
+    bundle install
+    bundle exec rspec
+    ```
+
+    All tests must pass before you submit.
+  </Step>
+  <Step title="Open a pull request">
+    Push your branch to your fork and open a pull request against the
+    `master` branch of the upstream repository. Include a brief description
+    of the vulnerability and a link to the original disclosure.
+  </Step>
+</Steps>

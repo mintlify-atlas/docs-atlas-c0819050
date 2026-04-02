@@ -1,0 +1,230 @@
+---
+title: "Ruby Engine Advisory Schema"
+description: "YAML schema reference for Ruby implementation security advisories"
+---
+
+Advisories in `rubies/` describe vulnerabilities in Ruby language implementations themselves (as opposed to gems). They follow a schema nearly identical to the [gem advisory schema](/schema/gem-schema), with one key difference: the `engine` field replaces `gem`, `library`, and `framework`.
+
+Files are stored under `rubies/<engine>/` and named after their CVE or GHSA identifier.
+
+## Complete Example
+
+```yaml rubies/ruby/CVE-2022-28739.yml
+---
+engine: ruby
+cve: 2022-28739
+ghsa: mvgc-rxvg-hqc6
+url: https://www.ruby-lang.org/en/news/2022/04/12/buffer-overrun-in-string-to-float-cve-2022-28739/
+title: Buffer overrun in String-to-Float conversion
+date: 2022-04-12
+description: |
+  A buffer-overrun vulnerability is discovered in a conversion algorithm from a String to a Float.
+  This vulnerability has been assigned the CVE identifier CVE-2022-28739. We strongly recommend
+  upgrading Ruby.
+
+  Due to a bug in an internal function that converts a String to a Float, some convertion methods
+  like Kernel#Float and String#to_f could cause buffer over-read. A typical consequence is a
+  process termination due to segmentation fault, but in a limited circumstances, it may be
+  exploitable for illegal memory read.
+
+  Please update Ruby to 2.6.10, 2.7.6, 3.0.4, or 3.1.2.
+cvss_v2: 4.3
+cvss_v3: 7.5
+patched_versions:
+  - "~> 2.6.10"
+  - "~> 2.7.6"
+  - "~> 3.0.4"
+  - ">= 3.1.2"
+related:
+  url:
+    - https://nvd.nist.gov/vuln/detail/CVE-2022-28739
+    - https://www.ruby-lang.org/en/news/2022/04/12/buffer-overrun-in-string-to-float-cve-2022-28739
+    - https://github.com/advisories/GHSA-mvgc-rxvg-hqc6
+```
+
+## Field Reference
+
+### Identification
+
+<ParamField path="engine" type="string" required>
+  The name of the affected Ruby implementation. Must be one of the following values:
+
+  | Value     | Implementation                          |
+  |-----------|-----------------------------------------|
+  | `ruby`    | The canonical MRI/CRuby implementation |
+  | `jruby`   | JRuby (Ruby on the JVM)                |
+  | `rbx`     | Rubinius                               |
+  | `mruby`   | mruby (embeddable Ruby)                |
+  | `mrubyc`  | mruby/c (microcontroller-targeted)     |
+
+  ```yaml
+  engine: ruby
+  ```
+
+  <Note>
+    This field replaces the `gem`, `library`, and `framework` fields used in gem advisories. Ruby engine advisories do not use those fields.
+  </Note>
+</ParamField>
+
+<ParamField path="platform" type="string">
+  The platform this vulnerability affects, if the vulnerability is platform-specific. Omit this field when the vulnerability applies to all platforms.
+
+  ```yaml
+  platform: jruby
+  ```
+</ParamField>
+
+### Vulnerability Identifiers
+
+<ParamField path="cve" type="string">
+  The [CVE](https://cve.mitre.org/) identifier for the vulnerability, in the format `YYYY-NNNNN` (year and numeric ID, without the `CVE-` prefix).
+
+  ```yaml
+  cve: 2022-28739
+  ```
+</ParamField>
+
+<ParamField path="osvdb" type="integer">
+  The [Open Sourced Vulnerability Database](https://en.wikipedia.org/wiki/Open_Source_Vulnerability_Database) (OSVDB) numeric ID. OSVDB is now defunct; this field exists for historical records.
+
+  ```yaml
+  osvdb: 118481
+  ```
+</ParamField>
+
+<ParamField path="ghsa" type="string">
+  The [GitHub Security Advisory](https://help.github.com/en/articles/about-maintainer-security-advisories) (GHSA) identifier, in the format `xxxx-xxxx-xxxx` (three groups of four lowercase alphanumeric characters, without the `GHSA-` prefix).
+
+  ```yaml
+  ghsa: mvgc-rxvg-hqc6
+  ```
+</ParamField>
+
+### Advisory Metadata
+
+<ParamField path="url" type="string" required>
+  The URL to the full advisory. Must be an `http://` or `https://` URL. Typically a link to the Ruby project's announcement page, the CVE record, or the GitHub Security Advisory.
+
+  ```yaml
+  url: https://www.ruby-lang.org/en/news/2022/04/12/buffer-overrun-in-string-to-float-cve-2022-28739/
+  ```
+</ParamField>
+
+<ParamField path="title" type="string" required>
+  A concise, single-line title describing the vulnerability. Must not span multiple lines.
+
+  ```yaml
+  title: Buffer overrun in String-to-Float conversion
+  ```
+</ParamField>
+
+<ParamField path="date" type="date" required>
+  The public disclosure date of the advisory, in `YYYY-MM-DD` format.
+
+  ```yaml
+  date: 2022-04-12
+  ```
+</ParamField>
+
+<ParamField path="description" type="string" required>
+  One or more paragraphs describing the vulnerability. Use a YAML block scalar (`|`) to preserve newlines. May include impact, affected versions, workarounds, and other relevant details. Markdown is supported.
+
+  ```yaml
+  description: |
+    A buffer-overrun vulnerability is discovered in a conversion algorithm
+    from a String to a Float.
+
+    Please update Ruby to 2.6.10, 2.7.6, 3.0.4, or 3.1.2.
+  ```
+</ParamField>
+
+### CVSS Scores
+
+<ParamField path="cvss_v2" type="float">
+  The [CVSSv2](https://www.first.org/cvss/v2/guide) score for the vulnerability, as a decimal number between 0.0 and 10.0.
+
+  ```yaml
+  cvss_v2: 4.3
+  ```
+</ParamField>
+
+<ParamField path="cvss_v3" type="float">
+  The [CVSSv3](https://www.first.org/cvss/v3.1/user-guide) score for the vulnerability, as a decimal number between 0.0 and 10.0.
+
+  ```yaml
+  cvss_v3: 7.5
+  ```
+</ParamField>
+
+<ParamField path="cvss_v4" type="float">
+  The [CVSSv4](https://www.first.org/cvss/v4.0/user-guide) score for the vulnerability, as a decimal number between 0.0 and 10.0.
+
+  ```yaml
+  cvss_v4: 6.6
+  ```
+</ParamField>
+
+### Version Constraints
+
+<Warning>
+  Version strings in `patched_versions` and `unaffected_versions` must be quoted. Unquoted strings like `>= 3.1.2` are invalid YAML because `>` is a reserved character. Always write them as `">= 3.1.2"` or `'~> 2.7.6'`.
+</Warning>
+
+<Note>
+  Version requirements follow [RubyGems version requirement syntax](https://guides.rubygems.org/patterns/#pessimistic-version-constraint):
+  - `"~> 2.7.6"` — compatible with 2.7.x and at least 2.7.6 (pessimistic constraint)
+  - `">= 3.1.2"` — version 3.1.2 or greater
+  - `"< 2.0.0"` — any version below 2.0.0
+
+  Multiple entries are used when the fix was backported across several active release series.
+</Note>
+
+<ParamField path="unaffected_versions" type="array">
+  A list of version requirement strings describing which versions of the Ruby implementation are **not** affected by the vulnerability. Each entry is a quoted string using RubyGems version requirement syntax.
+
+  ```yaml
+  unaffected_versions:
+    - "< 2.5.0"
+  ```
+</ParamField>
+
+<ParamField path="patched_versions" type="array">
+  A list of version requirement strings describing which versions of the Ruby implementation contain the fix. Multiple entries are used when fixes were backported across release series.
+
+  ```yaml
+  patched_versions:
+    - "~> 2.6.10"
+    - "~> 2.7.6"
+    - "~> 3.0.4"
+    - ">= 3.1.2"
+  ```
+</ParamField>
+
+### Related References
+
+<ParamField path="related" type="object">
+  Additional identifiers and URLs that are referenced by but secondary to this advisory. Supported keys:
+
+  - `cve` — list of additional CVE IDs (same format as the top-level `cve` field)
+  - `ghsa` — list of additional GHSA IDs
+  - `osvdb` — list of additional OSVDB integer IDs
+  - `url` — list of additional `http://` or `https://` URLs
+
+  ```yaml
+  related:
+    url:
+      - https://nvd.nist.gov/vuln/detail/CVE-2022-28739
+      - https://www.ruby-lang.org/en/news/2022/04/12/buffer-overrun-in-string-to-float-cve-2022-28739
+      - https://github.com/advisories/GHSA-mvgc-rxvg-hqc6
+  ```
+</ParamField>
+
+### Internal
+
+<ParamField path="notes" type="string">
+  Internal notes about this advisory's inclusion in the database. Not displayed to end users but useful for maintainers reviewing or updating records.
+
+  ```yaml
+  notes: Affects only Windows builds of Ruby 2.x.
+  ```
+</ParamField>

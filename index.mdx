@@ -1,97 +1,74 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Ruby Advisory Database"
+description: "A community-maintained database of security advisories for Ruby gems and Ruby implementations."
 ---
 
-## Setting up
+The Ruby Advisory Database is a community effort to compile all security advisories relevant to Ruby libraries and Ruby implementations. It powers tools like [bundler-audit](https://github.com/rubysec/bundler-audit) to help developers identify vulnerable dependencies in their projects.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Introduction" icon="book-open" href="/introduction">
+    Learn what the Ruby Advisory Database is and how it works
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Check your project for vulnerabilities in minutes
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Advisory Schema" icon="file-code" href="/schema/gem-schema">
+    Understand the YAML format used for advisories
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="Contributing" icon="code-pull-request" href="/contributing/guidelines">
+    Add new advisories or improve existing ones
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## What's in the database
 
-Everything you need to create world-class documentation.
+<CardGroup cols={3}>
+  <Card title="435+ Gems" icon="gem">
+    Security advisories covering hundreds of popular Ruby gems
+  </Card>
+  <Card title="5 Ruby Engines" icon="diamond">
+    Advisories for MRI Ruby, JRuby, mruby, mrubyc, and Rubinius
+  </Card>
+  <Card title="CVE & GHSA" icon="shield-halved">
+    Advisories identified by CVE, GHSA, and OSVDB identifiers
+  </Card>
+</CardGroup>
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+## Get started quickly
 
-## Need inspiration?
+<Steps>
+  <Step title="Install bundler-audit">
+    Add `bundler-audit` to your project to scan for vulnerabilities:
+    ```bash
+    gem install bundler-audit
+    ```
+  </Step>
+  <Step title="Update the advisory database">
+    Fetch the latest advisories from the Ruby Advisory Database:
+    ```bash
+    bundle-audit update
+    ```
+  </Step>
+  <Step title="Scan your project">
+    Run a vulnerability check against your `Gemfile.lock`:
+    ```bash
+    bundle-audit check
+    ```
+  </Step>
+  <Step title="Review and remediate">
+    Review flagged vulnerabilities and update affected gems to their patched versions.
+  </Step>
+</Steps>
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+## Contributing
+
+The database grows through community contributions. If you know of a vulnerability not yet listed, [open an issue or submit a pull request](https://github.com/rubysec/ruby-advisory-db) on GitHub.
+
+<CardGroup cols={2}>
+  <Card title="Submission guidelines" icon="list-check" href="/contributing/guidelines">
+    Follow formatting rules and schema requirements
+  </Card>
+  <Card title="GitHub Advisory sync" icon="rotate" href="/contributing/github-sync">
+    Sync advisories from the GitHub Security Advisory API
+  </Card>
+</CardGroup>

@@ -1,0 +1,98 @@
+---
+title: "Ruby Implementation Advisories"
+description: "Security advisories for Ruby engines in the rubies/ directory"
+---
+
+The `rubies/` directory contains security advisories that affect Ruby language implementations themselves — the interpreter, standard library, and runtime — rather than third-party gems. Each supported engine has its own subdirectory.
+
+## Supported engines
+
+The schema enforces the following engine identifiers:
+
+| Directory | Engine | Description |
+|-----------|--------|-------------|
+| `rubies/ruby/` | `ruby` | MRI (Matz's Ruby Interpreter), the reference C implementation |
+| `rubies/jruby/` | `jruby` | Ruby implemented on the Java Virtual Machine |
+| `rubies/mruby/` | `mruby` | Lightweight Ruby designed for embedding |
+| `rubies/mrubyc/` | `mrubyc` | Compact mruby variant for microcontrollers |
+| `rubies/rbx/` | `rbx` | Rubinius, a Ruby implementation written in Ruby |
+
+MRI Ruby (`rubies/ruby/`) has the most advisories by far, with over 85 tracked vulnerabilities going back to 2005.
+
+## Directory structure
+
+Each engine gets its own subdirectory. Advisory files within it follow the same CVE or GHSA naming convention used in the `gems/` directory:
+
+```bash
+rubies/
+├── jruby/
+│   ├── CVE-2010-1330.yml
+│   └── CVE-2017-17742.yml
+├── mruby/
+│   ├── CVE-2017-9527.yml
+│   └── CVE-2018-10191.yml
+├── mrubyc/
+│   └── CVE-2022-25857.yml
+├── rbx/
+│   └── CVE-2012-5372.yml
+└── ruby/
+    ├── CVE-2022-28739.yml
+    └── CVE-2021-31810.yml
+```
+
+The path pattern is:
+
+```
+rubies/<engine>/<CVE-or-GHSA-ID>.yml
+```
+
+## Example advisory
+
+The following is a real advisory from `rubies/ruby/CVE-2022-28739.yml`:
+
+```yaml
+---
+engine: ruby
+cve: 2022-28739
+ghsa: mvgc-rxvg-hqc6
+url: https://www.ruby-lang.org/en/news/2022/04/12/buffer-overrun-in-string-to-float-cve-2022-28739/
+title: Buffer overrun in String-to-Float conversion
+date: 2022-04-12
+description: |
+  A buffer-overrun vulnerability is discovered in a conversion algorithm from
+  a String to a Float. This vulnerability has been assigned the CVE identifier
+  CVE-2022-28739. We strongly recommend upgrading Ruby.
+
+  Due to a bug in an internal function that converts a String to a Float, some
+  convertion methods like Kernel#Float and String#to_f could cause buffer
+  over-read. A typical consequence is a process termination due to segmentation
+  fault, but in a limited circumstances, it may be exploitable for illegal
+  memory read.
+
+  Please update Ruby to 2.6.10, 2.7.6, 3.0.4, or 3.1.2.
+cvss_v2: 4.3
+cvss_v3: 7.5
+patched_versions:
+  - "~> 2.6.10"
+  - "~> 2.7.6"
+  - "~> 3.0.4"
+  - ">= 3.1.2"
+related:
+  url:
+    - https://nvd.nist.gov/vuln/detail/CVE-2022-28739
+    - https://www.ruby-lang.org/en/news/2022/04/12/buffer-overrun-in-string-to-float-cve-2022-28739
+    - https://github.com/advisories/GHSA-mvgc-rxvg-hqc6
+```
+
+Ruby engine advisories use the `engine` field instead of `gem`. This advisory also demonstrates the `cvss_v2` and `cvss_v3` scoring fields, multiple `patched_versions` constraints covering several still-maintained release series, and a `related` block with additional reference URLs.
+
+## Learn more
+
+<CardGroup cols={2}>
+  <Card title="Ruby advisory schema" icon="file-code" href="/schema/ruby-schema">
+    Complete field-by-field reference for the Ruby engine advisory YAML schema, including the `engine` enum, CVSS scoring fields, and `related` identifiers.
+  </Card>
+  <Card title="Submitting advisories" icon="circle-plus" href="/contributing/submitting-advisories">
+    Step-by-step guide for researching, writing, and submitting a new Ruby engine advisory as a pull request.
+  </Card>
+</CardGroup>

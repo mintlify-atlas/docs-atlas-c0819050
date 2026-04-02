@@ -1,0 +1,146 @@
+---
+title: "Submitting Advisories"
+description: "Step-by-step guide to submitting a new security advisory"
+---
+
+<Tip>
+  Before creating a new advisory, check whether it already exists in the
+  database. Browse the `gems/` or `rubies/` directories on GitHub, or search
+  for the CVE or GHSA identifier to avoid duplicates.
+</Tip>
+
+<Warning>
+  **Rails LTS versions are not tracked in this database.** The maintainers of
+  [Rails LTS](https://railslts.com/) have asked that their backported fixes not
+  be listed here. If you use Rails LTS with
+  [bundler-audit](https://github.com/rubysec/bundler-audit), add the relevant
+  CVEs to your `.bundler-audit.yml` file under the `ignore:` key instead of
+  submitting them as advisories.
+</Warning>
+
+## Submission steps
+
+<Steps>
+  <Step title="Fork the repository">
+    Fork [rubysec/ruby-advisory-db](https://github.com/rubysec/ruby-advisory-db)
+    on GitHub and clone your fork:
+
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/ruby-advisory-db.git
+    cd ruby-advisory-db
+    ```
+  </Step>
+  <Step title="Create the directory structure">
+    Advisory files live under one of two top-level directories depending on
+    what is affected:
+
+    - `gems/<gem-name>/` — for a RubyGem published on
+      [rubygems.org](https://rubygems.org/)
+    - `rubies/<engine>/` — for a Ruby implementation (`ruby`, `jruby`,
+      `mruby`, `mrubyc`, or `rbx`)
+
+    The directory name must match the gem name or engine name exactly as it
+    appears on rubygems.org (case-sensitive).
+
+    ```
+    gems/
+      actionpack/
+        CVE-2023-22795.yml
+    rubies/
+      ruby/
+        CVE-2022-28739.yml
+    ```
+  </Step>
+  <Step title="Create the YAML file">
+    Name the file after the advisory's identifier:
+
+    - CVE identifier: `CVE-YYYY-NNNNN.yml` (e.g., `CVE-2023-22795.yml`)
+    - GHSA identifier: `GHSA-xxxx-xxxx-xxxx.yml` (e.g.,
+      `GHSA-8xww-x3g3-6jcv.yml`)
+
+    Use a CVE-named file when a CVE exists. Use the GHSA identifier only when
+    no CVE has been assigned.
+  </Step>
+  <Step title="Fill in the required fields">
+    Every advisory file must include all required fields. Use the templates
+    below as a starting point. See the schema reference pages for a full
+    description of every field.
+
+    <CardGroup cols={2}>
+      <Card title="Gem schema" icon="gem" href="/schema/gem-schema">
+        All fields for `gems/` advisories.
+      </Card>
+      <Card title="Ruby engine schema" icon="code" href="/schema/ruby-schema">
+        All fields for `rubies/` advisories.
+      </Card>
+    </CardGroup>
+
+    #### Gem advisory template
+
+    ```yaml
+    ---
+    gem: example-gem
+    cve: 2024-12345
+    ghsa: xxxx-xxxx-xxxx
+    url: https://github.com/example/example-gem/security/advisories/GHSA-xxxx-xxxx-xxxx
+    title: Remote code execution vulnerability in ExampleGem
+    date: 2024-06-01
+    description: |
+      A remote code execution vulnerability was discovered in ExampleGem
+      versions prior to 1.2.3.
+
+      Versions Affected: < 1.2.3
+      Fixed Versions: 1.2.3
+    cvss_v3: 9.8
+    patched_versions:
+      - ">= 1.2.3"
+    ```
+
+    #### Ruby engine advisory template
+
+    ```yaml
+    ---
+    engine: ruby
+    cve: 2024-56789
+    url: https://www.ruby-lang.org/en/news/2024/06/01/cve-2024-56789/
+    title: Buffer overrun in string processing
+    date: 2024-06-01
+    description: |
+      A buffer overrun vulnerability was discovered in Ruby's string
+      processing routines.
+
+      Please update Ruby to 3.1.6, 3.2.4, or 3.3.1.
+    patched_versions:
+      - "~> 3.1.6"
+      - "~> 3.2.4"
+      - ">= 3.3.1"
+    ```
+
+    Follow these formatting rules when filling in fields:
+
+    - `title:` must be a single line — no newlines.
+    - `description: |` must contain more than one sentence or line.
+    - All version strings in `patched_versions` and `unaffected_versions`
+      must be **quoted** (e.g., `">= 1.2.3"`).
+    - Keep text within 80 columns.
+    - Use 2-space indentation throughout.
+  </Step>
+  <Step title="Install dependencies and run tests">
+    Install the gem dependencies, then run the full test suite:
+
+    ```bash
+    bundle install
+    bundle exec rspec
+    ```
+
+    All tests must pass before you submit your pull request. The suite validates
+    YAML schema conformance, version format, field types, and directory naming
+    consistency.
+  </Step>
+  <Step title="Submit a pull request">
+    Push your branch to your fork and open a pull request against the `master`
+    branch of [rubysec/ruby-advisory-db](https://github.com/rubysec/ruby-advisory-db).
+    Include the CVE or GHSA identifier in the PR title and a link to the
+    original disclosure in the description.
+  </Step>
+</Steps>

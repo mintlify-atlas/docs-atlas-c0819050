@@ -1,0 +1,222 @@
+---
+title: "Advisory Examples"
+description: "Real-world advisory examples from the database"
+---
+
+The following examples are drawn directly from the Ruby Advisory Database. Each illustrates a different combination of fields and identifier types.
+
+<Tip>
+  To find the CVSS score for an advisory: follow the `url` or check `https://nvd.nist.gov/vuln/detail/CVE-YYYY-NNNNN`. The NVD page lists both CVSSv2 and CVSSv3 scores under the "CVSS Scores" section. CVSSv4 scores, when available, can be found on the same page or via [FIRST's CVSS calculator](https://www.first.org/cvss/calculator/4.0).
+</Tip>
+
+## Gem advisory with CVE and framework tag
+
+This advisory for `actionpack` demonstrates the `framework` field (associating the gem with Rails), combined CVE and GHSA identifiers, and multiple `patched_versions` entries covering several active release branches.
+
+```yaml gems/actionpack/CVE-2023-22795.yml
+---
+gem: actionpack
+framework: rails
+cve: 2023-22795
+ghsa: 8xww-x3g3-6jcv
+url: https://github.com/rails/rails/releases/tag/v7.0.4.1
+title: ReDoS based DoS vulnerability in Action Dispatch
+date: 2023-01-18
+description: |
+  There is a possible regular expression based DoS vulnerability in Action
+  Dispatch related to the If-None-Match header. This vulnerability has been
+  assigned the CVE identifier CVE-2023-22795.
+
+  Versions Affected: All
+  Not affected: None
+  Fixed Versions: 6.1.7.1, 7.0.4.1
+
+  # Impact
+
+  A specially crafted HTTP If-None-Match header can cause the regular
+  expression engine to enter a state of catastrophic backtracking, when on a
+  version of Ruby below 3.2.0. This can cause the process to use large amounts
+  of CPU and memory, leading to a possible DoS vulnerability All users running
+  an affected release should either upgrade or use one of the workarounds
+  immediately.
+
+  # Workarounds
+
+  We recommend that all users upgrade to one of the FIXED versions. In the
+  meantime, users can mitigate this vulnerability by using a load balancer or
+  other device to filter out malicious If-None-Match headers before they reach
+  the application.
+
+  Users on Ruby 3.2.0 or greater are not affected by this vulnerability.
+patched_versions:
+  - "~> 5.2.8"
+  - "~> 6.1.7, >= 6.1.7.1"
+  - ">= 7.0.4.1"
+```
+
+**Notable fields:**
+- `framework: rails` — links the gem to its parent framework for tooling that groups advisories by framework
+- Three `patched_versions` entries, each using pessimistic (`~>`) constraints to cover a different Rails release series
+- Both `cve` and `ghsa` are present; either identifier can be used to name the file
+
+---
+
+## Gem advisory with GHSA-only identifier
+
+Not all advisories have a CVE. This `nokogiri` advisory was published via GitHub's security advisory program and has a GHSA identifier but no CVE. It also uses the `related` field to reference upstream CVEs that are addressed by the fix, even though the top-level advisory itself does not carry a CVE.
+
+```yaml gems/nokogiri/GHSA-pxvg-2qj5-37jq.yml
+---
+gem: nokogiri
+ghsa: pxvg-2qj5-37jq
+url: https://github.com/sparklemotion/nokogiri/security/advisories/GHSA-pxvg-2qj5-37jq
+title: Update packaged libxml2 to v2.10.4 to resolve multiple CVEs
+date: 2023-04-11
+description: |
+  ### Summary
+
+  Nokogiri v1.14.3 upgrades the packaged version of its dependency libxml2 to
+  [v2.10.4](https://gitlab.gnome.org/GNOME/libxml2/-/releases/v2.10.4) from v2.10.3.
+
+  libxml2 v2.10.4 addresses the following known vulnerabilities:
+
+  - [CVE-2023-29469](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-29469): Hashing of
+    empty dict strings isn't deterministic
+  - [CVE-2023-28484](https://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2023-28484): Fix null deref
+    in xmlSchemaFixupComplexType
+  - Schemas: Fix null-pointer-deref in xmlSchemaCheckCOSSTDerivedOK
+
+  Please note that this advisory only applies to the CRuby implementation of Nokogiri `< 1.14.3`,
+  and only if the _packaged_ libraries are being used. If you've overridden defaults at installation
+  time to use _system_ libraries instead of packaged libraries, you should instead pay attention to
+  your distro's `libxml2` release announcements.
+
+
+  ### Mitigation
+
+  Upgrade to Nokogiri `>= 1.14.3`.
+
+  Users who are unable to upgrade Nokogiri may also choose a more complicated mitigation: compile
+  and link Nokogiri against external libraries libxml2 `>= 2.10.4` which will also address these
+  same issues.
+
+
+  ### Impact
+
+  No public information has yet been published about the security-related issues other than the
+  upstream commits. Examination of those changesets indicate that the more serious issues relate to
+  libxml2 dereferencing NULL pointers and potentially segfaulting while parsing untrusted inputs.
+patched_versions:
+  - ">= 1.14.3"
+related:
+  url:
+    - https://gitlab.gnome.org/GNOME/libxml2/-/releases/v2.10.4
+  cve:
+    - 2023-29469
+    - 2023-28484
+```
+
+**Notable fields:**
+- No `cve` at the top level — the file is named after the GHSA identifier instead
+- `related.cve` lists the upstream CVEs that motivated the update without promoting them to the top-level `cve` field
+- `related.url` points to the upstream dependency release rather than the advisory itself
+
+---
+
+## Gem advisory with CVSS scores and `unaffected_versions`
+
+This `actionpack` advisory demonstrates `cvss_v4`, the `unaffected_versions` field (older versions not affected), and four `patched_versions` entries spanning multiple active release series.
+
+```yaml gems/actionpack/CVE-2024-41128.yml
+---
+gem: actionpack
+framework: rails
+cve: 2024-41128
+ghsa: x76w-6vjr-8xgj
+url: https://github.com/rails/rails/security/advisories/GHSA-x76w-6vjr-8xgj
+title: Possible ReDoS vulnerability in query parameter filtering in Action Dispatch
+date: 2024-10-15
+description: |
+  There is a possible ReDoS vulnerability in the query parameter
+  filtering routines of Action Dispatch. This vulnerability has
+  been assigned the CVE identifier CVE-2024-41128.
+
+  ## Impact
+
+  Carefully crafted query parameters can cause query parameter
+  filtering to take an unexpected amount of time, possibly resulting
+  in a DoS vulnerability. All users running an affected release
+  should either upgrade or apply the relevant patch immediately.
+
+  Ruby 3.2 has mitigations for this problem, so Rails applications
+  using Ruby 3.2 or newer are unaffected. Rails 8.0.0.beta1 depends
+  on Ruby 3.2 or greater so is unaffected.
+
+  ## Workarounds
+
+  Users on Ruby 3.2 are unaffected by this issue.
+cvss_v4: 6.6
+unaffected_versions:
+  - "< 3.1.0"
+patched_versions:
+  - "~> 6.1.7.9"
+  - "~> 7.0.8, >= 7.0.8.5"
+  - "~> 7.1.4, >= 7.1.4.1"
+  - ">= 7.2.1.1"
+related:
+  url:
+    - https://nvd.nist.gov/vuln/detail/CVE-2024-41128
+    - https://github.com/rails/rails/security/advisories/GHSA-x76w-6vjr-8xgj
+    - https://hackerone.com/reports/2872502
+    - https://github.com/advisories/GHSA-x76w-6vjr-8xgj
+```
+
+**Notable fields:**
+- `cvss_v4: 6.6` — uses the newer CVSSv4 scoring standard
+- `unaffected_versions: ["< 3.1.0"]` — explicitly declares that Rails applications prior to 3.1.0 are not affected, so scanners can avoid false positives on those versions
+- Four separate `patched_versions` entries with compound constraints (e.g., `"~> 7.0.8, >= 7.0.8.5"`) to precisely pin each backport
+
+---
+
+## Ruby engine advisory with CVSSv2 and CVSSv3
+
+This advisory targets the `ruby` engine itself (MRI/CRuby) rather than a gem. It includes both `cvss_v2` and `cvss_v3` scores and shows how multiple release series are patched simultaneously.
+
+```yaml rubies/ruby/CVE-2021-31810.yml
+---
+engine: ruby
+cve: 2021-31810
+ghsa: wr95-679j-87v9
+url: https://nvd.nist.gov/vuln/detail/CVE-2021-31810
+title: Trusting FTP PASV responses vulnerability in Net::FTP
+date: 2021-07-13
+description: |
+  An issue was discovered in Ruby through
+  2.6.7, 2.7.x through 2.7.3, and 3.x through 3.0.1.
+  A malicious FTP server can use the PASV response to trick Net::FTP
+  into connecting back to a given IP address and port. This potentially
+  makes curl extract information about services that are otherwise
+  private and not disclosed (e.g., the attacker can conduct port
+  scans and service banner extractions).
+cvss_v2: 5.0
+cvss_v3: 5.8
+patched_versions:
+  - "~> 2.6.8"
+  - "~> 2.7.4"
+  - ">= 3.0.2"
+related:
+  url:
+    - https://nvd.nist.gov/vuln/detail/CVE-2021-31810
+    - https://www.ruby-lang.org/en/news/2021/07/07/ruby-3-0-2-released
+    - https://www.ruby-lang.org/en/news/2021/07/07/ruby-2-7-4-released
+    - https://www.ruby-lang.org/en/news/2021/07/07/ruby-2-6-8-released
+    - https://www.ruby-lang.org/en/news/2021/07/07/trusting-pasv-responses-in-net-ftp
+    - https://hackerone.com/reports/1145454
+    - https://github.com/advisories/GHSA-wr95-679j-87v9
+```
+
+**Notable fields:**
+- `engine: ruby` — targets the MRI Ruby runtime, not a gem
+- Both `cvss_v2: 5.0` and `cvss_v3: 5.8` are recorded for completeness across older and newer scoring models
+- Three `patched_versions` entries covering the 2.6, 2.7, and 3.0 release series, using `~>` for the older series and `>=` for the current series
+- `related.url` includes multiple official Ruby release announcements and the original HackerOne report

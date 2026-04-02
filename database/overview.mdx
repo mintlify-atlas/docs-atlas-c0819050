@@ -1,0 +1,61 @@
+---
+title: "Database Overview"
+description: "How the Ruby Advisory Database is organized"
+---
+
+The Ruby Advisory Database is a community-maintained collection of security advisories for Ruby libraries and Ruby implementations. The database is a flat collection of YAML files — there is no API, no server, and no binary format. Every advisory is a human-readable `.yml` file that can be read, diffed, and contributed to like any other text file in a Git repository.
+
+## Top-level structure
+
+The repository contains two top-level directories:
+
+| Directory | Contents |
+|-----------|----------|
+| `gems/` | Security advisories for Ruby gems published on [rubygems.org](https://rubygems.org) |
+| `rubies/` | Security advisories for Ruby language implementations (MRI, JRuby, mruby, etc.) |
+
+```
+gems/:
+  actionpack/:
+    CVE-2014-0130.yml  CVE-2014-7818.yml  CVE-2014-7829.yml  CVE-2015-7576.yml
+    CVE-2015-7581.yml  CVE-2016-0751.yml  CVE-2016-0752.yml
+rubies/:
+  jruby/:
+    ...
+  mruby/:
+    ...
+  ruby/:
+    ...
+```
+
+## Naming conventions
+
+**Gem directories** are named after the gem's identifier on rubygems.org. For example, advisories for the `actionpack` gem live in `gems/actionpack/`.
+
+**Ruby implementation directories** are named after the engine identifier. For example, advisories for MRI Ruby live in `rubies/ruby/`, and advisories for JRuby live in `rubies/jruby/`.
+
+**Advisory files** within each directory are named by their identifier:
+
+- CVE identifiers: `CVE-YYYY-NNNNN.yml` (e.g., `CVE-2023-22795.yml`)
+- GitHub Security Advisory identifiers: `GHSA-xxxx-xxxx-xxxx.yml` (e.g., `GHSA-8xww-x3g3-6jcv.yml`)
+
+## Pure YAML — no API
+
+The database has no REST API, no search index, and no binary format. Consumers read it directly from the filesystem or by cloning the Git repository. Tools like [bundler-audit](https://github.com/rubysec/bundler-audit) clone or vendor the repository and parse the YAML files directly when checking a project's `Gemfile.lock`.
+
+This design keeps the database simple, auditable, and easy to contribute to.
+
+## Explore the database
+
+<CardGroup cols={2}>
+  <Card title="Gem Advisories" icon="gem" href="/database/gem-advisories">
+    Security advisories for Ruby gems in the `gems/` directory. Covers 435+ gems published on rubygems.org.
+  </Card>
+  <Card title="Ruby Implementation Advisories" icon="code" href="/database/ruby-advisories">
+    Security advisories for Ruby engines in the `rubies/` directory. Covers MRI Ruby, JRuby, mruby, mrubyc, and Rubinius.
+  </Card>
+</CardGroup>
+
+<Note>
+  To contribute a new advisory, open a pull request against the [ruby-advisory-db repository](https://github.com/rubysec/ruby-advisory-db). Run the test suite with `bundle exec rspec` before submitting to validate your YAML against the schema.
+</Note>

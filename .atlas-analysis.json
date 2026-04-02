@@ -1,0 +1,74 @@
+{
+  "projectType": "general",
+  "projectName": "Ruby Advisory Database",
+  "projectDescription": "A community-maintained database of security advisories for Ruby gems and Ruby implementations, structured as YAML files and used by tools like bundler-audit to detect vulnerable dependencies.",
+  "theme": "luma",
+  "primaryColor": "#e39a62",
+  "lightColor": "#1f9a93",
+  "darkColor": null,
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart"
+            ]
+          },
+          {
+            "group": "Database Structure",
+            "pages": [
+              "database/overview",
+              "database/gem-advisories",
+              "database/ruby-advisories"
+            ]
+          },
+          {
+            "group": "Advisory Schema",
+            "pages": [
+              "schema/gem-schema",
+              "schema/ruby-schema",
+              "schema/examples"
+            ]
+          },
+          {
+            "group": "Contributing",
+            "pages": [
+              "contributing/guidelines",
+              "contributing/submitting-advisories",
+              "contributing/github-sync",
+              "contributing/testing"
+            ]
+          },
+          {
+            "group": "Tools & Integrations",
+            "pages": [
+              "integrations/bundler-audit",
+              "integrations/related-projects"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Community-maintained YAML advisory files for 435+ Ruby gems",
+    "Coverage for multiple Ruby implementations: MRI, JRuby, mruby, TruffleRuby",
+    "CVE, GHSA, and OSVDB identifier support",
+    "CVSS v2/v3/v4 scoring fields",
+    "GitHub Advisory API sync tooling",
+    "Kwalify schema validation with RSpec test suite",
+    "Used by bundler-audit for Gemfile.lock vulnerability scanning"
+  ],
+  "publicApiSurface": [
+    "gems/<gem-name>/<CVE-ID>.yml — advisory file for a Ruby gem",
+    "rubies/<engine>/<CVE-ID>.yml — advisory file for a Ruby implementation",
+    "GitHub::GitHubAdvisorySync.sync(min_year:, gem_name:) — sync from GitHub Advisory API",
+    "rake sync_github_advisories[gem_name] — Rake task to sync GitHub advisories",
+    "bundle exec rspec — run the advisory validation test suite",
+    "YAML fields: gem, cve, ghsa, url, title, date, description, cvss_v3, patched_versions, unaffected_versions"
+  ]
+}
